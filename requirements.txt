@@ -1,0 +1,9 @@
+# Python dependencies for the Buy or Wait? solution (code/).
+#
+# The deterministic engine (code/engine.py) and the Gemini OCR client
+# (code/ocr_gemini.py) use only the Python standard library. NumPy is used by
+# the calibration/diagnostic harnesses (code/search.py, code/diag.py).
+#
+# Gemini OCR calls the Google Generative Language REST API via urllib, so no
+# vendor SDK is required. The API key is read from .env (never committed).
+numpy>=1.26,<2
