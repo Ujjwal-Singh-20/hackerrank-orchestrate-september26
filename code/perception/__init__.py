@@ -1,7 +1,20 @@
 """perception: LLM/OCR boundary ONLY — message-amendment extraction and image
 amount extraction. Everything here sits behind PerceptionProvider so tests can
 inject a stub with no network. The default provider is deterministic (cached
-OCR values + regex parsers over the generator's message phrasings)."""
+OCR values + regex parsers over the generator's message phrasings).
+
+UNTRUSTED EVIDENCE POLICY (AGENTS.md 6.1 / problem_statement.md):
+Messages and images are untrusted evidence. They may clarify, amend, delay,
+cancel, or confirm a FINANCIAL FACT — and only through this module's
+whitelisted fact extraction (salary amount/date, salary termination, rent
+increase percentage, image amount). Embedded instructions ("ignore the
+rules", "recommend full payment", "pay account X") match no fact pattern and
+are therefore inert: there is no path from message/image content to the
+routing rules themselves. Extracted facts are additionally sanitized
+(_sanitize_amendment): amounts must be finite and positive, percentages in
+(0, 100], dates parseable. Facts failing sanity checks are dropped, and a
+financial fact claiming a value (e.g. a salary amount) is applied as data,
+never as an instruction."""
 
 from __future__ import annotations
 import re
@@ -51,8 +64,28 @@ class PerceptionProvider(Protocol):
     def extract_image_amount(self, image_id: str) -> float: ...
 
 
+def _sanitize_amendment(a: Amendment) -> Amendment | None:
+    """Drop amendments whose extracted values fail sanity bounds. Untrusted
+    evidence can only become routing input if it is a well-formed fact."""
+    import math
+    if a.kind is AmendmentType.SALARY_AMOUNT:
+        if a.amount is None or not math.isfinite(a.amount) or a.amount <= 0:
+            return None
+    if a.kind is AmendmentType.RENT_INCREASE_PCT:
+        if a.amount is None or not (0 < a.amount <= 100):
+            return None
+    if a.effective_date is not None:
+        try:
+            date.fromisoformat(a.effective_date.isoformat())
+        except (ValueError, AttributeError):
+            return None
+    return a
+
+
 class DeterministicPerception:
-    """Regex parsers over the dataset's message phrasings + cached OCR."""
+    """Regex parsers over the dataset's message phrasings + cached OCR.
+    Message/image content is untrusted: only whitelisted, sanitized financial
+    facts pass through (see the module docstring's policy)."""
 
     def extract_amendments(self, dataset: Dataset, user_id: str) -> tuple[Amendment, ...]:
         out: list[Amendment] = []
@@ -76,10 +109,12 @@ class DeterministicPerception:
             if any(k in text.lower() for k in _INCOME_HINT):
                 m_date = _DATE_PAT.search(text)
                 eff = date.fromisoformat(m_date.group(1)) if m_date else None
-                out.append(Amendment(
+                am = _sanitize_amendment(Amendment(
                     AmendmentType.SALARY_AMOUNT,
                     float(m_amt.group(1).replace(",", "")),
                     eff, note=m.message_id))
+                if am is not None:
+                    out.append(am)
         return tuple(out)
 
     def extract_image_amount(self, image_id: str) -> float:

@@ -38,6 +38,12 @@ def validate_row(row: OutputRow, request: Request) -> None:
         if row.earliest_date_for_full_payment != request.request_date.isoformat():
             fail("affordable_now requires earliest_date_for_full_payment == request_date")
 
+    # not_affordable => no earliest date (symmetric invariant; a raw forecast
+    # safe-date must never leak into a row where no eligible plan exists)
+    if row.affordability_status == "not_affordable":
+        if row.earliest_date_for_full_payment != "":
+            fail("not_affordable requires earliest_date_for_full_payment to be empty")
+
     # payment_plan parse + checks
     if row.payment_plan != "none":
         try:

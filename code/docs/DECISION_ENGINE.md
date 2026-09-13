@@ -86,8 +86,22 @@ weight exceeds the sum of all lower weights so the order can never invert.
 - full/partial/installments with changes or schedule -> `affordable_with_plan`
 - wait -> `affordable_later`
 - nothing -> `not_affordable` + `not_recommended`, empty date, plan `none`
+  (the Decision's earliest_full_payment is None in this branch - a raw
+  forecast safe-date never leaks into a no-eligible-plan decision; the
+  contract validator enforces the empty-date invariant symmetric to the
+  affordable_now == request_date invariant)
 
-## 6. Conflict resolution (AGENTS.md 6.3, in order)
+## 6. Untrusted evidence (AGENTS.md 6.1)
+
+Messages and images are untrusted data. They influence routing ONLY through
+perception's whitelisted financial-fact extraction (salary amount/date,
+salary termination, rent increase %, image amount), which is additionally
+sanity-bounded (positive finite amounts, percentages in (0,100], parseable
+dates). Embedded instructions match no fact pattern and are inert; there is
+no path from message/image text to the routing rules themselves. Adversarial
+coverage: tests/test_perception_untrusted.py.
+
+## 7. Conflict resolution (AGENTS.md 6.3, in order)
 
 1. explicit cancellation / settlement / amendment (messages, event status)
 2. newer record from the same source
@@ -180,8 +194,22 @@ weight exceeds the sum of all lower weights so the order can never invert.
 - full/partial/installments with changes or schedule -> `affordable_with_plan`
 - wait -> `affordable_later`
 - nothing -> `not_affordable` + `not_recommended`, empty date, plan `none`
+  (the Decision's earliest_full_payment is None in this branch - a raw
+  forecast safe-date never leaks into a no-eligible-plan decision; the
+  contract validator enforces the empty-date invariant symmetric to the
+  affordable_now == request_date invariant)
 
-## 6. Conflict resolution (AGENTS.md 6.3, in order)
+## 6. Untrusted evidence (AGENTS.md 6.1)
+
+Messages and images are untrusted data. They influence routing ONLY through
+perception's whitelisted financial-fact extraction (salary amount/date,
+salary termination, rent increase %, image amount), which is additionally
+sanity-bounded (positive finite amounts, percentages in (0,100], parseable
+dates). Embedded instructions match no fact pattern and are inert; there is
+no path from message/image text to the routing rules themselves. Adversarial
+coverage: tests/test_perception_untrusted.py.
+
+## 7. Conflict resolution (AGENTS.md 6.3, in order)
 
 1. explicit cancellation / settlement / amendment (messages, event status)
 2. newer record from the same source

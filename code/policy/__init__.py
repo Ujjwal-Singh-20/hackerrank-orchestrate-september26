@@ -277,6 +277,10 @@ def decide(profile: UserProfile, events: list[LedgerEvent], request: Request,
     cands = enumerate_candidates(profile, events, request, fr, options,
                                  amendments, image_amounts, rates)
     if not cands:
+        # No eligible plan exists: the forecast's raw safe-date finding is
+        # irrelevant once no eligible plan exists - the Decision carries no
+        # earliest full-payment date. (Sample ground truth: every
+        # not_affordable row leaves earliest_date_for_full_payment empty.)
         return Decision(
             request_id=request.request_id,
             amount_safe_to_pay=fr.amount_safe_to_pay,
@@ -285,8 +289,8 @@ def decide(profile: UserProfile, events: list[LedgerEvent], request: Request,
             plan=PlanCandidate(kind=PaymentMethod.NOT_RECOMMENDED, payments=(),
                                 total_paid=0.0, spending_changes=(),
                                 completes_by_deadline=False, eligible=False,
-                                ineligible_reason="no safe eligible plan"),
-            earliest_full_payment=fr.earliest_full_payment,
+                                ineligible_reason="No payment method you are willing to consider can complete this request safely within 90 days."),
+            earliest_full_payment=None,
             spending_changes=())
     best = rank(cands)[0]
     # status mapping

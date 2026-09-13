@@ -1,0 +1,6 @@
+.env
+.venv/
+code.zip
+__pycache__/
+*.bundle
+repo_snapshot.zip

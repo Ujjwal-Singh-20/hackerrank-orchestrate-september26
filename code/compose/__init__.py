@@ -51,6 +51,10 @@ def build_explanation(x: ExplanationInputs) -> str:
         if x.next_income_date:
             parts.append(f"Next confirmed income: {x.next_income_date.isoformat()}.")
         if x.earliest_full_payment is None and x.reason:
-            parts.append(x.reason)
+            r = x.reason.strip()
+            r = r[0].upper() + r[1:]
+            if not r.endswith("."):
+                r += "."
+            parts.append(r)
 
     return " ".join(p.strip() for p in parts if p.strip())

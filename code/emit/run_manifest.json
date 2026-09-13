@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-09-12T19:19:38.588331+00:00",
-  "config_fingerprint": "34cc4df353fd190e",
+  "timestamp": "2026-09-13T06:41:19.395388+00:00",
+  "config_fingerprint": "c4cb3c33376aa62d",
   "dataset_fingerprints": {
     "requests.csv": "f94255baa9f55857",
     "financial_profiles.csv": "b91b4ccbda3d5af9",
@@ -12,5 +12,5 @@
   },
   "perception_provider": "deterministic",
   "rows_written": 250,
-  "notes": "routed 250 requests in 1.8s"
+  "notes": "routed 250 requests in 1.7s"
 }
